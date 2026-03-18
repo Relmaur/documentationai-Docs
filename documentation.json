@@ -27,6 +27,16 @@
                 "title": "Quickstart",
                 "path": "quickstart",
                 "icon": "zap"
+              },
+              {
+                "title": "TAW Theme",
+                "path": "taw-core-theme",
+                "icon": "lucide-paint-roller"
+              },
+              {
+                "title": "Taw Framework",
+                "path": "taw-framework",
+                "icon": "hammer"
               }
             ]
           }
