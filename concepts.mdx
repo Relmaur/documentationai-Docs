@@ -1,54 +1,244 @@
 ---
-title: Core Concepts
-description: The basic building blocks of this starter kit.
+title: TAW Core concepts
+description: Understand how TAW Core and TAW Theme fit together, from PHP blocks and MetaBlocks to metabox storage and the Vite/Tailwind asset pipeline.
 ---
 
 ## Overview
 
-<Callout kind="alert">
-This page is an example. Replace every concept with the real terms your product uses.
+TAW Core defines the runtime and APIs for PHP blocks, metaboxes, and assets; TAW Theme is the concrete theme that uses those APIs to build real layouts.
+
+<Callout kind="info">
+Think of TAW Core as the engine and TAW Theme as the car body and interior. You customize the theme, not the engine.
 </Callout>
 
-## The building blocks
+## TAW Core vs TAW Theme
 
 <Columns cols={2}>
-  <Card title="Pages" icon="file-text">
-    Every page is an `.mdx` file. Content lives in the repo and is safe to edit.
+  <Card title="TAW Core (engine)" icon="settings">
+    Provides `TAW\Core\Theme::boot()`, block registration and rendering, the metabox and options-page engine, and the Vite/Tailwind asset loader. You rarely change this.
   </Card>
-  <Card title="Navigation" icon="list">
-    Sidebar structure comes from `documentation.json`.
-  </Card>
-  <Card title="Components" icon="layout-grid">
-    Reusable blocks like Callouts, Steps, Tabs, and Cards keep pages consistent.
-  </Card>
-  <Card title="API Reference" icon="code">
-    If you use it, the API tab reads from `openapi.yaml`.
+  <Card title="TAW Theme (your theme)" icon="folder">
+    Lives in your theme directory. Defines concrete Blocks, MetaBlocks, templates, and styles. Uses TAW Core classes and helpers to build real pages.
   </Card>
 </Columns>
 
-## Navigation shape (sample)
+TAW Core exposes the base classes (`BaseBlock`, `MetaBlock`) and services (BlockRegistry, ViteLoader, metabox engine) that power the framework.
 
-```json
+TAW Theme wires those pieces together by calling `Theme::boot()`, configuring performance options, defining blocks under `Blocks/`, and shipping the built assets.
+
+```php
+// functions.php in your theme
+use TAW\Core\Theme;
+
+Theme::boot();
+Theme::performance([
+    'disable_comments' => true,
+    'clean_head'       => true,
+]);
+```
+
+When this code runs, TAW Core discovers your blocks, registers metaboxes and options pages, and configures the asset pipeline for the current environment.
+
+## Blocks directory and auto-discovery
+
+TAW Theme keeps all block classes under the `Blocks/` directory at the root of the theme.
+
+<Columns cols={2}>
+  <Card title="Directory convention" icon="folder">
+    Any PHP class under `Blocks/` that extends a TAW Core block base class is auto-discovered and queued for rendering.
+  </Card>
+  <Card title="Render pipeline" icon="code">
+    The BlockRegistry scans `Blocks/`, instantiates block classes, and exposes methods to render them from templates.
+  </Card>
+</Columns>
+
+A simple UI block might look like this:
+
+```php
+// Blocks/Hero.php
+use TAW\Core\Blocks\BaseBlock;
+
+class Hero extends BaseBlock
 {
-  "tab": "Documentation",
-  "groups": [
+    public function render(array $context = []): void
     {
-      "group": "Getting Started",
-      "pages": [
-        { "title": "Introduction", "path": "introduction" }
-      ]
+        // Echo or include a PHP partial here
     }
-  ]
 }
 ```
 
-## How to adapt this page
+In a template, you call the registry (via a helper or injected instance) to render the block.
+
+```php
+// index.php
+$blocks->render('Hero', [
+    'title'   => 'Welcome to TAW',
+    'lead'    => 'Component-based theming for WordPress',
+]);
+```
+
+As long as you follow the `Blocks/` convention and extend the right base class, TAW Core takes care of discovery and wiring.
+
+## UI Blocks vs MetaBlocks
+
+TAW blocks fall into two broad categories:
+
+<Columns cols={2}>
+  <Card title="UI Blocks" icon="layout-grid">
+    Stateless, reusable components. Accept data via parameters or view-models and focus on rendering HTML. Ideal for headers, footers, cards, and layout atoms.
+  </Card>
+  <Card title="MetaBlocks" icon="database">
+    Section-like blocks that define their own metabox fields and store data in WordPress. Ideal for hero sections, feature grids, or any content editors manage per post.
+  </Card>
+</Columns>
+
+### When to use a UI Block
+
+Use a UI Block when the block:
+
+- Does not own its data
+- Receives everything it needs via arguments or a view-model
+- Can be reused across many pages with different inputs
+
+```php
+// Blocks/Button.php
+use TAW\Core\Blocks\BaseBlock;
+
+class Button extends BaseBlock
+{
+    public function render(array $props = []): void
+    {
+        // Render a button with props like 'label' and 'url'
+    }
+}
+```
+
+### When to use a MetaBlock
+
+Choose a MetaBlock when the block should define and persist its own fields.
+
+```php
+// Blocks/HeroMeta.php
+use TAW\Core\Blocks\MetaBlock;
+
+class HeroMeta extends MetaBlock
+{
+    protected function fields(): array
+    {
+        return [
+            $this->text('headline'),
+            $this->textarea('subcopy'),
+            $this->image('background_image'),
+        ];
+    }
+
+    public function render(): void
+    {
+        $data = $this->data(); // Loaded from post_meta
+        // Render hero using stored values
+    }
+}
+```
+
+MetaBlocks integrate directly with the metabox engine so editors fill fields in the WordPress admin and see the block on the front end.
+
+## Metabox engine and options pages
+
+The metabox engine in TAW Core handles field registration, storage, and retrieval for MetaBlocks and for global options pages.
+
+<Columns cols={2}>
+  <Card title="Per‑post data (post_meta)" icon="file-text">
+    MetaBlocks store their fields in `post_meta` attached to the current post, page, or custom post type. Use this for content that changes per entry.
+  </Card>
+  <Card title="Global settings (wp_options)" icon="settings">
+    Options pages define fields that live in `wp_options`. Use this for site-wide configuration such as branding, analytics IDs, or default layouts.
+  </Card>
+</Columns>
+
+A typical options page definition in your theme might look like this:
+
+```php
+// somewhere in your theme bootstrap
+use TAW\Core\Options\OptionsPage;
+
+OptionsPage::make('Theme Settings', 'theme_settings')
+    ->tab('Branding', function ($tab) {
+        $tab->text('site_tagline');
+        $tab->image('logo');
+    })
+    ->register();
+```
+
+Under the hood, TAW Core maps these fields to `wp_options` and gives you helpers to read them in templates.
+
+```php
+$tagline = taw_option('site_tagline');
+```
+
+<Callout kind="tip">
+Use MetaBlocks for editor-managed content that belongs to a specific post, and options pages for configuration that should apply everywhere.
+</Callout>
+
+## Asset pipeline: Vite, per-block assets, Tailwind v4
+
+TAW Core ships with a Vite-based asset loader and Tailwind v4 integration. TAW Theme provides the actual entrypoints and block-level files.
+
+<Columns cols={3}>
+  <Card title="Vite dev mode" icon="terminal">
+    In development, Vite runs with HMR and serves assets directly. TAW Core's ViteLoader points WordPress templates at the dev server.
+  </Card>
+  <Card title="Vite build output" icon="package">
+    In production, you build assets once. Vite outputs hashed files under `public/build/`, and TAW Core reads the manifest to enqueue them.
+  </Card>
+  <Card title="Per-block assets" icon="layout-grid">
+    Blocks can declare their own CSS/JS entrypoints. TAW Core loads only the assets needed for the blocks rendered on a page.
+  </Card>
+</Columns>
+
+A minimal Vite entry for your theme might look like this:
+
+```js
+// resources/js/theme.js
+import '../css/theme.css';
+// import per-block scripts here
+```
+
+Tailwind v4 is wired through the Vite plugin:
+
+```js
+// vite.config.js
+import tailwindcss from '@tailwindcss/vite';
+
+export default {
+  plugins: [
+    tailwindcss(),
+    // other plugins
+  ],
+};
+```
+
+TAW Theme decides which entrypoints exist; TAW Core ensures those assets are enqueued for front-end requests.
+
+## Recommended mental model and next steps
+
+Think of a new project as configuring TAW Core once, then spending your time in TAW Theme:
 
 <Steps>
-  <Step title="Replace the terms" icon="edit">
-    Swap "Pages" and "Components" for your real domain language.
+  <Step title="Boot TAW Core in your theme" icon="play-circle">
+    Call `TAW\Core\Theme::boot()` from your theme's `functions.php` and configure `Theme::performance([...])` as needed. Once the core is booted, block discovery, metaboxes, and assets become available.
   </Step>
-  <Step title="Add your concepts" icon="plus">
-    Create a section for the ideas your users must learn first.
+
+  <Step title="Design your Blocks directory" icon="folder">
+    Create a `Blocks/` directory and sketch your main sections: UI Blocks for reusable pieces, MetaBlocks for content editors manage. Name blocks after the role they play in the layout (for example, `Hero`, `FeatureGrid`, `FooterNav`).
+  </Step>
+
+  <Step title="Define fields and options" icon="edit">
+    For MetaBlocks, implement `fields()` so each block declares its own metabox fields. For site-wide settings, add options pages that store values in `wp_options`. Use these APIs instead of ad‑hoc `get_post_meta()` calls.
+  </Step>
+
+  <Step title="Wire up assets and Tailwind" icon="code">
+    Configure your Vite entrypoints, import Tailwind v4, and set up any per-block scripts or styles. Run Vite in dev for HMR, and build to `public/build/` for production. Confirm that blocks enqueue only the assets they need.
   </Step>
 </Steps>
+
+Once you are comfortable with these concepts, move on to implementing concrete blocks and layouts in your TAW Theme and iterating on the editor experience.

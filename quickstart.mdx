@@ -1,58 +1,136 @@
 ---
-title: Quickstart
-description: Minimal steps to customize this sample starter kit.
+title: TAW Theme Quickstart
+description: Spin up a new WordPress project with TAW Theme and TAW Core, including Composer install, Vite dev server, theme activation, and your first block.
 ---
+
 ## Overview
 
-<Callout kind="alert" collapsed="false">
-  This site ships with placeholder content. Use this quickstart to replace it with your real product docs.
+Use this quickstart to create a new WordPress theme powered by TAW Theme and TAW Core, run the Vite dev server, and scaffold your first block.
+
+<Callout kind="info">
+
+  TAW Theme uses TAW Core under the hood for the block system, MetaBlock, metabox engine, and Vite asset pipeline. When you boot the theme, you also boot TAW Core.
+
 </Callout>
 
-## 1. Update a page
+## Prerequisites
+
+<Callout kind="alert">
+
+  Before you start, make sure your environment meets these requirements:
+
+  - WordPress 6.0 or higher
+  - PHP 8.1 or higher
+  - Composer installed and available on your `PATH`
+  - Node.js 20 or higher
+  - npm (bundled with Node)
+
+</Callout>
+
+## Create and activate a TAW Theme project
 
 <Steps>
-  <Step title="Edit introduction" icon="edit" title-type="p">
-    Replace the sample introduction with a concise overview of your product and the key actions you want new users to take first.
+  <Step title="Create a new theme via Composer" icon="terminal" title-type="p">
+    Run the Composer template to scaffold a fresh TAW Theme project inside your WordPress `wp-content/themes` directory.
+
+    <CodeGroup>
+
+    ```bash
+    # From your WordPress root
+    cd wp-content/themes
+
+    # Scaffold a new TAW Theme project (replace acme-docs with your theme folder)
+    composer create-project taw/theme acme-docs
+
+    cd acme-docs
+
+    # Install PHP dependencies for TAW Core, Vite integration, and block system
+    composer install
+    ```
+
+    ```bash
+    # If you already created the project, just install PHP deps
+    cd wp-content/themes/acme-docs
+    composer install
+    ```
+
+    </CodeGroup>
+
+    After this step, your theme folder contains TAW Theme, TAW Core, and the `Blocks` directory for your custom blocks.
   </Step>
 
-  <Step title="Preview your change" icon="monitor" title-type="p">
-    Use your dashboard board editor to confirm the updated introduction looks and reads as expected.
+  <Step title="Install JS dependencies and start Vite dev server" icon="zap" title-type="p">
+    Install the Node dependencies and start the Vite dev server for hot module reloading during development.
+
+    ```bash
+    # Still inside your theme directory
+    npm install
+
+    # Start Vite with HMR for Tailwind v4 and your block assets
+    npm run dev
+    ```
+
+    When this succeeds, your terminal shows Vite listening on a localhost port, and WordPress pages using the theme will load assets from the dev server.
+  </Step>
+
+  <Step title="Activate the theme in WordPress admin" icon="monitor" title-type="p">
+    Switch your site to use the new TAW Theme.
+
+    - Log in to your WordPress admin.
+    - Go to **Appearance → Themes**.
+    - Find your new theme (for example, **Acme Docs**).
+    - Click **Activate**.
+
+    After activation, visit the frontend: you should see the TAW Theme layout rendered, backed by TAW Core.
   </Step>
 </Steps>
 
-## 2. Add a new page
+## Scaffold your first block
+
+Use the built-in TAW CLI to generate a new block and place it in the `Blocks` directory.
 
 <Steps>
-  <Step title="Add a page" icon="file-text" title-type="p">
-    Create a new `page` by clicking on the + button from the left navigation bar of dashboard. If you are using git, create the .mdx file and add to navigation bar using documentation.json
+  <Step title="Generate a block with the TAW CLI" icon="code" title-type="p">
+    Run the block generator from your theme root.
+
+    ```bash
+    # From your TAW Theme directory
+    php bin/taw make:block Hero --type=meta --with-style
+    ```
+
+    This command creates a new `Hero` block inside `Blocks/`, including PHP, meta configuration, and style scaffolding wired into the Vite pipeline.
+  </Step>
+
+  <Step title="Verify the block in WordPress" icon="check-circle" title-type="p">
+    After generation and with `npm run dev` still running:
+
+    - Go to the WordPress block editor for a page or template.
+    - Search for the **Hero** block in the block inserter.
+    - Insert it and confirm that its markup and styles load correctly.
+
+    If you see the block and edits update live when you save block files, your TAW Theme + TAW Core setup is working.
   </Step>
 </Steps>
 
-## Example onboarding flow (replace with yours)
+## Optional: production build
 
-1. Sign up for an account and verify your email.
+Use a production build when you deploy or want to test optimized assets.
 
-2. Create your first workspace, project, or environment.
+```bash
+# From your TAW Theme directory
+npm run build
+```
 
-3. Add one integration or data source to connect your existing tools.
-
-4. Complete a guided action (for example, run your first job or publish your first resource).
-
-5. Invite a teammate and assign a basic role or permission.
-
-## 3. Connect API Reference (optional)
-
-If you have an API, replace `openapi.yaml` with your real OpenAPI file. If you do not need an API reference, remove that tab either from dashboard or  `documentation.json`.
+This runs the Vite production build and outputs optimized CSS and JS that WordPress will load when the dev server is not running.
 
 ## Next steps
 
-<Columns cols="2">
-  <Card title="Core Concepts" href="/concepts" icon="layers" horizontal="false">
-    Keep the mental model simple and easy to scan.
+<Columns cols={2}>
+  <Card title="Core Concepts" href="/concepts" icon="book-open" horizontal="false">
+    Learn how TAW Theme and TAW Core work together, including block architecture, MetaBlock, and asset loading.
   </Card>
 
-  <Card title="Authentication" href="/authentication" icon="lock" horizontal="false">
-    Add your real auth flows and security notes.
+  <Card title="Components" href="/components" icon="code" horizontal="false">
+    Explore available documentation components to document your new TAW-powered theme.
   </Card>
 </Columns>
-
