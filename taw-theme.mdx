@@ -20,16 +20,16 @@ Call `TAW\Core\Theme::boot()` once from your theme to wire up block loading, Vit
 
   - Calls `BlockRegistry::enqueueQueuedAssets()` to enqueue CSS/JS requested by blocks during render.
 
-  - Calls `VisualEditor::init()` and instantiates:
-
-    - `VisualEditorEndpoint`
-
-    - `SearchEndpoints`
+  - Registers `SearchEndpoints` for the `taw/v1/search-posts` REST endpoint.
 
   - Calls `Svg::register()` to enable safe SVG upload and sanitization.
 
 <Callout kind="info" collapsed="false">
   `Theme::boot()` does not accept arguments and is designed to run exactly once per request. Call it from your theme bootstrap (for example, `functions.php`) before you add custom hooks that depend on blocks or Vite.
+</Callout>
+
+<Callout kind="warning" collapsed="false">
+  The Visual Editor (`TAW\Core\VisualEditor`) is under active development and is **not ready for production use**.
 </Callout>
 
 ## Recommended bootstrap flow
@@ -173,86 +173,86 @@ Once the theme is booted and performance is configured, use helper classes from 
   Each helper has its own dedicated documentation. Use this section as an orientation and then follow the links when you are ready to integrate them into templates and metabox UIs.
 </Callout>
 
-### TAW\Helpers\Editor
+### Vite asset helper functions
 
-`TAW\Helpers\Editor` provides helper methods to work with the visual editor:
+`vite-loader.php` (autoloaded from `taw/core`) exposes two global functions you can call anywhere in your templates.
 
-- Generate attribute arrays for block markup.
+<ParamField body="vite_asset_url($path)" param-type="string" required="true" deprecated="false">
+  Resolve a theme asset path to its URL — returns the content-hashed production URL or the Vite dev server URL during development.
 
-- Normalize and render editor field values.
+  ```php
+  <?php
 
-- Integrate editor fields with your custom templates and metaboxes.
+  // Resolve a self-hosted font file
+  $fontUrl = vite_asset_url('resources/fonts/Inter-Regular.woff2');
 
-Use this helper when you need a clean bridge between Gutenberg data structures and your PHP templates.
+  echo '<link rel="preload" href="' . esc_url($fontUrl) . '" as="font" crossorigin>';
+  ```
+</ParamField>
+
+<ParamField body="vite_is_dev()" param-type="bool" required="false" deprecated="false">
+  Return `true` when the Vite dev server is running. Use this for dev-only logic such as disabling caches or injecting debug markup.
+
+  ```php
+  <?php
+
+  if (vite_is_dev()) {
+      // dev-only logic
+  }
+  ```
+</ParamField>
 
 ### TAW\Helpers\Image
 
-`TAW\Helpers\Image` offers image-related helpers:
+`TAW\Helpers\Image` generates `<img>` tags with the correct `loading`, `fetchpriority`, `decoding`, `srcset`, and `sizes` attributes based on whether the image is above or below the fold.
 
-- Render optimized `<img>` tags with size, srcset, and loading attributes.
+- Render optimized `<img>` tags with proper performance attributes.
 
-- Generate preload hints for above-the-fold images.
+- Generate `<link rel="preload">` tags for above-the-fold images.
 
 - Work with WordPress attachment IDs rather than hard-coded URLs.
 
 Use this helper in hero sections, featured images, and any template that must load quickly on first paint.
 
-#### New and commonly used methods
+#### Commonly used methods
 
-Use these methods to fetch URLs, dimensions, and CSS-ready background definitions from WordPress attachment IDs and registered sizes.
-
-<ParamField body="Image::url($id, $size)" param-type="string" required="true" deprecated="false">
-  Return the image URL for a given attachment ID and registered image size. Use this when you only need the URL, for example to pass into JavaScript or build custom markup.
+<ParamField body="Image::render($id, $size, $alt, $options = [])" param-type="string" required="true" deprecated="false">
+  Render an `<img>` tag with automatically set `loading`, `fetchpriority`, `decoding`, `srcset`, and `sizes` attributes. Pass `['above_fold' => true]` for hero images that should load eagerly with high priority.
 
   ```php
   <?php
 
   use TAW\Helpers\Image;
 
-  $heroUrl = Image::url(1234, 'hero-desktop');
+  // Above-the-fold hero (eager, high priority)
+  echo Image::render($hero_id, 'full', 'Hero image', ['above_fold' => true]);
 
-  echo '<img src="' . esc_url($heroUrl) . '" alt="Homepage hero">';
+  // Regular image (lazy, low priority — the default)
+  echo Image::render(get_post_thumbnail_id(), 'large', 'Post thumbnail');
+
+  // With CSS class and custom sizes attribute
+  echo Image::render($id, 'large', 'Team photo', [
+      'class' => 'rounded-lg shadow-md',
+      'sizes' => '(max-width: 768px) 100vw, 50vw',
+  ]);
+
+  // With arbitrary extra attributes
+  echo Image::render($id, 'medium', 'Logo', [
+      'attr' => ['id' => 'site-logo', 'data-hero' => 'true'],
+  ]);
   ```
 </ParamField>
 
-<ParamField body="Image::getDimension($id, $size)" param-type="array{width:int,height:int}" required="true" deprecated="false">
-  Return an associative array with `width` and `height` integers for the resolved image size. Use this to set explicit dimensions for layout stability or to calculate aspect ratios.
+<ParamField body="Image::preload_tag($id, $size)" param-type="string" required="true" deprecated="false">
+  Generate a `<link rel="preload">` tag for your single most important image. Call before `wp_head()` or hook at priority 1–2 to ensure it lands early in `<head>`.
 
   ```php
   <?php
 
   use TAW\Helpers\Image;
 
-  $dimension = Image::getDimension(1234, 'hero-desktop');
-  // $dimension is ['width' => 1920, 'height' => 1080]
-
-  echo 'Hero aspect ratio: ' . ($dimension['width'] / $dimension['height']);
-  ```
-</ParamField>
-
-<ParamField body="Image::background($id, $size, $options = [])" param-type="string" required="true" deprecated="false">
-  Build a CSS background definition for an attachment and size. By default the helper returns a full background style string and accepts options for position, size, and repeat behavior; pass `['url_only' => true]` to return only the URL for use in custom CSS.
-
-  ```php
-  <?php
-
-  use TAW\Helpers\Image;
-
-  // Full background style, including position/size/no-repeat defaults.
-  $backgroundStyle = Image::background(1234, 'hero-desktop', [
-      'position'  => 'center center',
-      'size'      => 'cover',
-      'no_repeat' => true,
-  ]);
-
-  echo '<section style="' . esc_attr($backgroundStyle) . '">...</section>';
-
-  // URL-only mode when you want to compose your own CSS.
-  $backgroundUrl = Image::background(1234, 'hero-desktop', [
-      'url_only' => true,
-  ]);
-
-  echo '<section style="background-image: url(' . esc_url($backgroundUrl) . ');">...</section>';
+  echo Image::preload_tag($hero_id, 'full');
+  // → <link rel="preload" href="..." as="image" imagesrcset="..." imagesizes="...">
   ```
 </ParamField>
 
