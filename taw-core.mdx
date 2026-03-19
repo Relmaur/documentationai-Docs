@@ -66,50 +66,174 @@ Each field below uses a `type` value that maps directly to the metabox renderer.
 <ExpandableGroup>
   <Expandable title="Text" default-open="false">
     Single-line text input. Combine with `placeholder` and `required`. Stores a string value.
+
+    ```php
+    ['id' => 'heading', 'label' => 'Heading', 'type' => 'text', 'placeholder' => 'Enter heading...', 'required' => true]
+    ```
+
+    ```php
+    $heading = Metabox::get($postId, 'heading');
+    echo esc_html($heading);
+    ```
   </Expandable>
 
   <Expandable title="Url" default-open="false">
     URL input with browser-level URL validation. Stores a string URL.
+
+    ```php
+    ['id' => 'cta_url', 'label' => 'CTA URL', 'type' => 'url', 'placeholder' => 'https://...']
+    ```
+
+    ```php
+    $url = Metabox::get($postId, 'cta_url');
+    echo '<a href="' . esc_url($url) . '">Learn more</a>';
+    ```
   </Expandable>
 
   <Expandable title="Number" default-open="false">
     Numeric input for integers or floats. Supports `min`, `max`, and `step` options to constrain the value and control the increment size.
+
+    ```php
+    ['id' => 'item_count', 'label' => 'Item Count', 'type' => 'number', 'min' => 1, 'max' => 100, 'step' => 1]
+    ```
+
+    ```php
+    $count = (int) Metabox::get($postId, 'item_count');
+    ```
   </Expandable>
 
   <Expandable title="Textarea" default-open="false">
     Multi-line plain text area. Use `rows` to control height and combine with `placeholder` and `description` when you expect longer content.
+
+    ```php
+    ['id' => 'summary', 'label' => 'Summary', 'type' => 'textarea', 'rows' => 4, 'placeholder' => 'Enter summary...']
+    ```
+
+    ```php
+    $summary = Metabox::get($postId, 'summary');
+    echo esc_html($summary);
+    ```
   </Expandable>
 
   <Expandable title="Wysiwyg" default-open="false">
     Rich text editor field. Accepts `rows`, `media_buttons` (boolean), and `teeny` (boolean) options to control editor size and whether media buttons or a simplified toolbar are shown.
+
+    ```php
+    ['id' => 'body', 'label' => 'Body', 'type' => 'wysiwyg', 'rows' => 8, 'media_buttons' => true]
+    ```
+
+    ```php
+    $body = Metabox::get($postId, 'body');
+    echo wp_kses_post($body);
+    ```
   </Expandable>
 
   <Expandable title="Select" default-open="false">
     Dropdown select input. Provide an `options` map of `value => label` pairs; the field stores the selected option value as a string.
+
+    ```php
+    ['id' => 'style', 'label' => 'Style', 'type' => 'select', 'options' => ['light' => 'Light', 'dark' => 'Dark']]
+    ```
+
+    ```php
+    $style = Metabox::get($postId, 'style'); // 'light' or 'dark'
+    echo '<section class="section--' . esc_attr($style) . '">';
+    ```
   </Expandable>
 
   <Expandable title="Checkbox" default-open="false">
     Single checkbox input for boolean-style flags. Stores string values `'1'` or `'0'` using a hidden input that defaults to `'0'`.
+
+    ```php
+    ['id' => 'show_cta', 'label' => 'Show CTA', 'type' => 'checkbox']
+    ```
+
+    ```php
+    $showCta = Metabox::get_bool($postId, 'show_cta');
+    if ($showCta) {
+        // render CTA
+    }
+    ```
   </Expandable>
 
   <Expandable title="Color" default-open="false">
     Color picker input. Accepts a `default` value (for example `#ffffff`) and stores the selected color string.
+
+    ```php
+    ['id' => 'bg_color', 'label' => 'Background', 'type' => 'color', 'default' => '#ffffff']
+    ```
+
+    ```php
+    $bgColor = Metabox::get_color($postId, 'bg_color', '#ffffff');
+    echo '<section style="background-color: ' . esc_attr($bgColor) . '">';
+    ```
   </Expandable>
 
   <Expandable title="Range" default-open="false">
     Slider-style range input. Supports `min`, `max`, and `step` options, plus an optional `unit` string (for example `%`, `px`) for display alongside the numeric value.
+
+    ```php
+    ['id' => 'min_height', 'label' => 'Min Height', 'type' => 'range', 'min' => 400, 'max' => 900, 'step' => 50, 'unit' => 'px', 'default' => 600]
+    ```
+
+    ```php
+    $minHeight = Metabox::get($postId, 'min_height') ?: '600';
+    echo '<section style="min-height: ' . esc_attr($minHeight) . 'px">';
+    ```
   </Expandable>
 
   <Expandable title="Group" default-open="false">
-    Nested group of sub-fields. Use a `fields` array inside the group to define child fields with their own `id`, `type`, and options. Useful for logically grouping related settings.
+    Nested group of sub-fields. Use a `fields` array inside the group to define child fields with their own `id`, `type`, and options. Unlike a repeater, there is always exactly one row. Sub-fields are stored as separate meta keys using the group `id` as a prefix.
+
+    ```php
+    [
+        'id'    => 'hero_cta',
+        'label' => 'CTA Button',
+        'type'  => 'group',
+        'fields' => [
+            ['id' => 'text', 'label' => 'Text', 'type' => 'text', 'width' => '50'],
+            ['id' => 'url',  'label' => 'URL',  'type' => 'url',  'width' => '50'],
+        ],
+    ]
+    ```
+
+    ```php
+    // Stored as _taw_hero_cta_text and _taw_hero_cta_url
+    $ctaText = Metabox::get($postId, 'hero_cta_text');
+    $ctaUrl  = Metabox::get($postId, 'hero_cta_url');
+    ```
   </Expandable>
 
   <Expandable title="Post Select" default-open="false">
     Post selector field. Supports `post_type` (single or multiple types), `multiple` (boolean to allow multiple selections), and `max` (integer cap on the number of selected posts).
+
+    ```php
+    // Single post
+    ['id' => 'featured_post', 'label' => 'Featured Post', 'type' => 'post_select', 'post_type' => 'post']
+
+    // Multiple posts with a cap
+    ['id' => 'related', 'label' => 'Related Posts', 'type' => 'post_select', 'post_type' => 'post', 'multiple' => true, 'max' => 3]
+    ```
+
+    ```php
+    $featuredId = Metabox::get_posts($postId, 'featured_post')[0] ?? null;
+    $relatedIds = Metabox::get_posts($postId, 'related'); // array of post IDs
+    ```
   </Expandable>
 
   <Expandable title="Image" default-open="false">
     WordPress media library picker. Stores an attachment ID as an integer. Retrieve as a URL with `Metabox::get_image_url($postId, 'field_id', 'size')` or use `$this->getImageUrl()` inside a `MetaBlock`.
+
+    ```php
+    ['id' => 'hero_image', 'label' => 'Hero Image', 'type' => 'image']
+    ```
+
+    ```php
+    $imageUrl = Metabox::get_image_url($postId, 'hero_image', 'large');
+
+    // Inside a MetaBlock:
+    $imageUrl = $this->getImageUrl($postId, 'hero_image', 'large');
+    ```
   </Expandable>
 
   <Expandable title="Repeater" default-open="false">
@@ -378,53 +502,6 @@ It optionally posts each submission to a webhook endpoint (n8n, Zapier, Make, et
   Configure the webhook endpoint and HMAC secret under **Settings > Form Webhook** in the WordPress admin. TAW Core signs outbound submission payloads so your receiver can verify authenticity.
 </Callout>
 
-{/* MARK: Mail */}
-
-# Mail
-
-Use `TAW\Core\Mail\MailTemplate` to work with HTML or MJML templates from your theme and `TAW\Core\Mail\Mailer` to send emails with variable replacement.
-
-Mail templates live under your theme, for example `mails/contact.html` or `mails/contact.mjml`. `MailTemplate::getAvailable()` exposes the templates that exist on disk, and each template supports `{{var}}` placeholders for variables you pass at send time.
-
-A minimal example of sending a templated email:
-
-```php
-use TAW\Core\Mail\Mailer;
-
-$mailer = new Mailer();
-
-$sent = $mailer
-    ->to('support@acme-agency.test')
-    ->subject('New contact form submission')
-    ->template('contact') // resolves mails/contact.html or .mjml
-    ->setVariables([
-        'name' => 'Jane Chen',
-        'email' => 'jane@acme.com',
-        'message' => 'I would like to discuss a new project.',
-    ])
-    ->send();
-
-if (! $sent) {
-    // Handle failed mail transport (log, retry, etc.).
-}
-```
-
-<Callout kind="info" collapsed="false">
-  `Mailer` uses the underlying `wp_mail()` transport. Make sure your WordPress site is configured with a working mail provider (SMTP or transactional service) so test and production emails are delivered reliably.
-</Callout>
-
-`TAW\Core\Mail\MailTemplate` compiles templates from your theme, performs `{{var}}` replacement, and is responsible for producing the final HTML payload that `Mailer` sends.
-
-### Admin entrypoints and testing
-
-TAW Core adds admin screens to help you operate and test these modules without writing ad-hoc scripts.
-
-- **Tools > Test Emails** — registered by `MailTester::register()`, lets you send test emails using your templates and variables to verify layout and delivery in your environment.
-
-- **Settings > Form Webhook** — configures the webhook URL and HMAC secret that `SubmissionsHandler` uses when posting saved submissions to an external endpoint.
-
-Use these screens to confirm templates render as expected and form submissions reach your downstream systems before wiring them into live flows.
-
 {/* MARK: OptionsPage */}
 
 ## Options page
@@ -538,6 +615,53 @@ Requires `edit_posts` capability (logged-in editors and above).
 | `exclude`   | `''`     | Comma-separated post IDs to exclude                 |
 
 **Response fields per post:** `id`, `title`, `post_type`, `status`, `date`, `edit_url`, `permalink`, `thumbnail`
+
+{/* MARK: Mail */}
+
+# Mail
+
+Use `TAW\Core\Mail\MailTemplate` to work with HTML or MJML templates from your theme and `TAW\Core\Mail\Mailer` to send emails with variable replacement.
+
+Mail templates live under your theme, for example `mails/contact.html` or `mails/contact.mjml`. `MailTemplate::getAvailable()` exposes the templates that exist on disk, and each template supports `{{var}}` placeholders for variables you pass at send time.
+
+A minimal example of sending a templated email:
+
+```php
+use TAW\Core\Mail\Mailer;
+
+$mailer = new Mailer();
+
+$sent = $mailer
+    ->to('support@acme-agency.test')
+    ->subject('New contact form submission')
+    ->template('contact') // resolves mails/contact.html or .mjml
+    ->setVariables([
+        'name' => 'Jane Chen',
+        'email' => 'jane@acme.com',
+        'message' => 'I would like to discuss a new project.',
+    ])
+    ->send();
+
+if (! $sent) {
+    // Handle failed mail transport (log, retry, etc.).
+}
+```
+
+<Callout kind="info" collapsed="false">
+  `Mailer` uses the underlying `wp_mail()` transport. Make sure your WordPress site is configured with a working mail provider (SMTP or transactional service) so test and production emails are delivered reliably.
+</Callout>
+
+`TAW\Core\Mail\MailTemplate` compiles templates from your theme, performs `{{var}}` replacement, and is responsible for producing the final HTML payload that `Mailer` sends.
+
+### Admin entrypoints and testing
+
+TAW Core adds admin screens to help you operate and test these modules without writing ad-hoc scripts.
+
+- **Tools > Test Emails** — registered by `MailTester::register()`, lets you send test emails using your templates and variables to verify layout and delivery in your environment.
+
+- **Settings > Form Webhook** — configures the webhook URL and HMAC secret that `SubmissionsHandler` uses when posting saved submissions to an external endpoint.
+
+Use these screens to confirm templates render as expected and form submissions reach your downstream systems before wiring them into live flows.
 
 {/* MARK: Tool Index */}
 
