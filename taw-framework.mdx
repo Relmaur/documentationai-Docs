@@ -1,8 +1,9 @@
 ---
 title: TAW Core Tools
-description: Overview of the developer tools TAW Core exposes for the TAW Theme, including CLI commands, runtime APIs, forms, mail, and debugging helpers.
+description: >-
+  Overview of the developer tools TAW Core exposes for the TAW Theme, including
+  CLI commands, runtime APIs, forms, mail, and debugging helpers.
 ---
-
 ## What counts as a tool in TAW Core
 
 TAW Core tools are the developer-facing building blocks the theme uses: command-line utilities and runtime PHP APIs.
@@ -10,12 +11,11 @@ TAW Core tools are the developer-facing building blocks the theme uses: command-
 These tools fall into two groups:
 
 - **CLI commands** — Symfony Console commands exposed through the `bin/taw` script in your theme. Use them to generate and manage blocks and other theme artifacts.
+
 - **Runtime APIs and helpers** — PHP classes, functions, and configuration points that run inside WordPress, such as theme boot configuration, performance tuning, block registration, admin UI engines, config-driven forms, mail templates, and debugging helpers.
 
-<Callout kind="info">
-
-TAW Theme builds on top of these TAW Core primitives. When you configure the theme or call theme helpers, you are usually driving these lower-level tools under the hood.
-
+<Callout kind="info" collapsed="false">
+  TAW Theme builds on top of these TAW Core primitives. When you configure the theme or call theme helpers, you are usually driving these lower-level tools under the hood.
 </Callout>
 
 ## How TAW Core boots into the theme
@@ -24,14 +24,10 @@ The theme template boots TAW Core via the `TAW\Core\Theme::boot()` entrypoint. Y
 
 This boot process wires TAW Core tools into WordPress so that CLI commands, block registration, metaboxes, and other helpers are available within your theme.
 
-<Columns cols={3}>
-
-<Card title="Theme boot and performance" href="/taw-core-theme" icon="rocket">
-
-See how `Theme::boot()` initializes TAW Core and how `Theme::performance([...])` controls caching, hooks, and other runtime behavior.
-
-</Card>
-
+<Columns cols="3">
+  <Card title="Theme boot and performance" href="/taw-core-theme" icon="rocket" horizontal="false">
+    See how `Theme::boot()` initializes TAW Core and how `Theme::performance([...])` controls caching, hooks, and other runtime behavior.
+  </Card>
 </Columns>
 
 ## New runtime modules: Forms and Mail
@@ -64,10 +60,8 @@ echo $form->render();
 
 `TAW\Core\Form\SubmissionsHandler` registers the `taw_submission` post type and optionally posts each submission to a configured webhook.
 
-<Callout kind="info">
-
-Configure the webhook endpoint and HMAC secret under **Settings > Form Webhook** in the WordPress admin. TAW Core signs outbound submission payloads so your receiver can verify authenticity.
-
+<Callout kind="info" collapsed="false">
+  Configure the webhook endpoint and HMAC secret under **Settings > Form Webhook** in the WordPress admin. TAW Core signs outbound submission payloads so your receiver can verify authenticity.
 </Callout>
 
 ### Mail: templates and fluent sending
@@ -99,10 +93,8 @@ if (! $sent) {
 }
 ```
 
-<Callout kind="info">
-
-`Mailer` uses the underlying `wp_mail()` transport. Make sure your WordPress site is configured with a working mail provider (SMTP or transactional service) so test and production emails are delivered reliably.
-
+<Callout kind="info" collapsed="false">
+  `Mailer` uses the underlying `wp_mail()` transport. Make sure your WordPress site is configured with a working mail provider (SMTP or transactional service) so test and production emails are delivered reliably.
 </Callout>
 
 `TAW\Core\Mail\MailTemplate` compiles templates from your theme, performs `{{var}}` replacement, and is responsible for producing the final HTML payload that `Mailer` sends.
@@ -112,6 +104,7 @@ if (! $sent) {
 TAW Core adds admin screens to help you operate and test these modules without writing ad-hoc scripts.
 
 - **Tools > Test Emails** — registered by `MailTester::register()`, lets you send test emails using your templates and variables to verify layout and delivery in your environment.
+
 - **Settings > Form Webhook** — configures the webhook URL and HMAC secret that `SubmissionsHandler` uses when posting saved submissions to an external endpoint.
 
 Use these screens to confirm templates render as expected and form submissions reach your downstream systems before wiring them into live flows.
@@ -139,10 +132,8 @@ $fields = [
 ];
 ```
 
-<Callout kind="info">
-
-The canonical implementation lives in the `TAW\Core\Metabox\Metabox` class (`src/Core/Metabox/Metabox.php`), which switches on the field `type` and handles rendering and saving.
-
+<Callout kind="info" collapsed="false">
+  The canonical implementation lives in the `TAW\Core\Metabox\Metabox` class (`src/Core/Metabox/Metabox.php`), which switches on the field `type` and handles rendering and saving.
 </Callout>
 
 ### Common field options
@@ -150,11 +141,17 @@ The canonical implementation lives in the `TAW\Core\Metabox\Metabox` class (`src
 Most field types support a shared set of options you can mix and match as needed:
 
 - `id` — required unique key used for saving and retrieving the meta value.
+
 - `label` — human-readable label shown next to the field in the metabox UI.
+
 - `description` — help text shown below the field for additional guidance.
+
 - `required` — boolean flag to mark the field as required in the UI/validation layer.
+
 - `width` — layout hint for field width within the metabox row.
+
 - `placeholder` — placeholder text for text-like inputs.
+
 - `conditions` — show/hide logic based on other field values, with `field`, `value`, and `operator` keys.
 
 Use these common options alongside the type-specific options below.
@@ -163,132 +160,90 @@ Use these common options alongside the type-specific options below.
 
 Each field below uses a `type` value that maps directly to the metabox renderer.
 
-<ParamField body="text" param-type="field type" required="true" deprecated="false">
-
-Single-line text input. Combine with `placeholder` and `required`. Stores a string value.
-
+<ParamField body="text" param-type="field type" required="false" deprecated="false">
+  Single-line text input. Combine with `placeholder` and `required`. Stores a string value.
 </ParamField>
 
-<ParamField body="url" param-type="field type" required="true" deprecated="false">
-
-URL input with browser-level URL validation. Stores a string URL.
-
+<ParamField body="url" param-type="field type" required="false" deprecated="false">
+  URL input with browser-level URL validation. Stores a string URL.
 </ParamField>
 
-<ParamField body="number" param-type="field type" required="true" deprecated="false">
-
-Numeric input for integers or floats. Supports `min`, `max`, and `step` options to constrain the value and control the increment size.
-
+<ParamField body="number" param-type="field type" required="false" deprecated="false">
+  Numeric input for integers or floats. Supports `min`, `max`, and `step` options to constrain the value and control the increment size.
 </ParamField>
 
-<ParamField body="textarea" param-type="field type" required="true" deprecated="false">
-
-Multi-line plain text area. Use `rows` to control height and combine with `placeholder` and `description` when you expect longer content.
-
+<ParamField body="textarea" param-type="field type" required="false" deprecated="false">
+  Multi-line plain text area. Use `rows` to control height and combine with `placeholder` and `description` when you expect longer content.
 </ParamField>
 
-<ParamField body="wysiwyg" param-type="field type" required="true" deprecated="false">
-
-Rich text editor field. Accepts `rows`, `media_buttons` (boolean), and `teeny` (boolean) options to control editor size and whether media buttons or a simplified toolbar are shown.
-
+<ParamField body="wysiwyg" param-type="field type" required="false" deprecated="false">
+  Rich text editor field. Accepts `rows`, `media_buttons` (boolean), and `teeny` (boolean) options to control editor size and whether media buttons or a simplified toolbar are shown.
 </ParamField>
 
-<ParamField body="select" param-type="field type" required="true" deprecated="false">
-
-Dropdown select input. Provide an `options` map of `value => label` pairs; the field stores the selected option value as a string.
-
+<ParamField body="select" param-type="field type" required="false" deprecated="false">
+  Dropdown select input. Provide an `options` map of `value => label` pairs; the field stores the selected option value as a string.
 </ParamField>
 
-<ParamField body="checkbox" param-type="field type" required="true" deprecated="false">
-
-Single checkbox input for boolean-style flags. Stores string values `'1'` or `'0'` using a hidden input that defaults to `'0'`.
-
+<ParamField body="checkbox" param-type="field type" required="false" deprecated="false">
+  Single checkbox input for boolean-style flags. Stores string values `'1'` or `'0'` using a hidden input that defaults to `'0'`.
 </ParamField>
 
-<ParamField body="color" param-type="field type" required="true" deprecated="false">
-
-Color picker input. Accepts a `default` value (for example `#ffffff`) and stores the selected color string.
-
+<ParamField body="color" param-type="field type" required="false" deprecated="false">
+  Color picker input. Accepts a `default` value (for example `#ffffff`) and stores the selected color string.
 </ParamField>
 
-<ParamField body="range" param-type="field type" required="true" deprecated="false">
-
-Slider-style range input. Supports `min`, `max`, and `step` options, plus an optional `unit` string (for example `%`, `px`) for display alongside the numeric value.
-
+<ParamField body="range" param-type="field type" required="false" deprecated="false">
+  Slider-style range input. Supports `min`, `max`, and `step` options, plus an optional `unit` string (for example `%`, `px`) for display alongside the numeric value.
 </ParamField>
 
-<ParamField body="image" param-type="field type" required="true" deprecated="false">
-
-Image selector field that stores a single attachment ID. Typically rendered with a preview and remove/change controls.
-
+<ParamField body="image" param-type="field type" required="false" deprecated="false">
+  Image selector field that stores a single attachment ID. Typically rendered with a preview and remove/change controls.
 </ParamField>
 
-<ParamField body="group" param-type="field type" required="true" deprecated="false">
-
-Nested group of sub-fields. Use a `fields` array inside the group to define child fields with their own `id`, `type`, and options. Useful for logically grouping related settings.
-
+<ParamField body="group" param-type="field type" required="false" deprecated="false">
+  Nested group of sub-fields. Use a `fields` array inside the group to define child fields with their own `id`, `type`, and options. Useful for logically grouping related settings.
 </ParamField>
 
-<ParamField body="post_select" param-type="field type" required="true" deprecated="false">
-
-Post selector field. Supports `post_type` (single or multiple types), `multiple` (boolean to allow multiple selections), and `max` (integer cap on the number of selected posts).
-
+<ParamField body="post_select" param-type="field type" required="false" deprecated="false">
+  Post selector field. Supports `post_type` (single or multiple types), `multiple` (boolean to allow multiple selections), and `max` (integer cap on the number of selected posts).
 </ParamField>
 
-<ParamField body="repeater" param-type="field type" required="true" deprecated="false">
-
-Repeatable set of sub-fields. Provide a `fields` array describing each item row, and configure `min`, `max`, and `button_label` to control the allowed number of items and the label of the "add item" button.
-
+<ParamField body="repeater" param-type="field type" required="false" deprecated="false">
+  Repeatable set of sub-fields. Provide a `fields` array describing each item row, and configure `min`, `max`, and `button_label` to control the allowed number of items and the label of the "add item" button.
 </ParamField>
 
 ## Tool index
 
 Use these pages as the canonical reference for each TAW Core tool. Each one explains when to use it, how it plugs into the theme, and the key APIs or commands it provides.
 
-<Columns cols={3}>
+<Columns cols="3">
+  <Card title="Theme boot and performance" href="/taw-core-theme" icon="rocket" horizontal="false">
+    Configure how TAW Core starts up inside your WordPress theme and tune performance-sensitive behavior.
+  </Card>
 
-<Card title="Theme boot and performance" href="/taw-core-theme" icon="rocket">
+  <Card title="TAW CLI" href="/taw-core-cli" icon="terminal" horizontal="false">
+    Work with Symfony Console commands via `bin/taw`, including `make:block`, `export:block`, and `import:block`.
+  </Card>
 
-Configure how TAW Core starts up inside your WordPress theme and tune performance-sensitive behavior.
+  <Card title="Blocks API" href="/taw-core-blocks" icon="code" horizontal="false">
+    Define, register, and render blocks using TAW Core's block abstraction instead of low-level WordPress APIs.
+  </Card>
 
-</Card>
+  <Card title="Metabox engine" href="/taw-core-metabox" icon="settings" horizontal="false">
+    Declare structured metaboxes in PHP and let TAW Core handle rendering, saving, and sanitization.
+  </Card>
 
-<Card title="TAW CLI" href="/taw-core-cli" icon="terminal">
+  <Card title="Options pages" href="/taw-core-options-pages" icon="settings" horizontal="false">
+    Create admin options pages backed by TAW Core schemas, so configuration stays consistent across your theme.
+  </Card>
 
-Work with Symfony Console commands via `bin/taw`, including `make:block`, `export:block`, and `import:block`.
+  <Card title="Vite and asset pipeline" href="/taw-core-assets-vite" icon="package" horizontal="false">
+    Integrate Vite-based builds and asset loading with TAW Core's helpers to manage scripts, styles, and cache busting.
+  </Card>
 
-</Card>
-
-<Card title="Blocks API" href="/taw-core-blocks" icon="code">
-
-Define, register, and render blocks using TAW Core's block abstraction instead of low-level WordPress APIs.
-
-</Card>
-
-<Card title="Metabox engine" href="/taw-core-metabox" icon="settings">
-
-Declare structured metaboxes in PHP and let TAW Core handle rendering, saving, and sanitization.
-
-</Card>
-
-<Card title="Options pages" href="/taw-core-options-pages" icon="settings">
-
-Create admin options pages backed by TAW Core schemas, so configuration stays consistent across your theme.
-
-</Card>
-
-<Card title="Vite and asset pipeline" href="/taw-core-assets-vite" icon="package">
-
-Integrate Vite-based builds and asset loading with TAW Core's helpers to manage scripts, styles, and cache busting.
-
-</Card>
-
-<Card title="Debugging utilities" href="/taw-core-debugging" icon="info">
-
-Use logging, enhanced `dump()` / `dd()`, and other diagnostics exposed by TAW Core to debug theme behavior safely in local and development environments.
-
-</Card>
-
+  <Card title="Debugging utilities" href="/taw-core-debugging" icon="info" horizontal="false">
+    Use logging, enhanced `dump()` / `dd()`, and other diagnostics exposed by TAW Core to debug theme behavior safely in local and development environments.
+  </Card>
 </Columns>
 
 ## When to reach for each tool
@@ -296,26 +251,24 @@ Use logging, enhanced `dump()` / `dd()`, and other diagnostics exposed by TAW Co
 Choose tools based on the kind of change you are making:
 
 - **New or updated content blocks** — Use the **TAW CLI** (`make:block`) and the **Blocks API** for registration and rendering.
+
 - **Admin UX or content modeling** — Use the **Metabox engine** and **Options pages** to add structured configuration in the admin.
+
 - **Performance or infrastructure changes** — Adjust **Theme boot and performance** configuration and wire assets through the **Vite/asset pipeline**.
+
 - **Troubleshooting** — Turn on and use **Debugging utilities** to inspect what TAW Core is doing at runtime. The enhanced `dump()` / `dd()` helpers format output cleanly and are intended for local or development use only, not production.
 
 ## Next steps
 
 Move from this overview into hands-on usage:
 
-<Columns cols={2}>
+<Columns cols="2">
+  <Card title="Get started quickly" href="/quickstart" icon="zap" horizontal="false">
+    Spin up TAW Theme with TAW Core, run `bin/taw`, and wire your first blocks using the CLI and runtime helpers.
+  </Card>
 
-<Card title="Get started quickly" href="/quickstart" icon="zap">
-
-Spin up TAW Theme with TAW Core, run `bin/taw`, and wire your first blocks using the CLI and runtime helpers.
-
-</Card>
-
-<Card title="Learn the core concepts" href="/concepts" icon="book-open">
-
-Build a mental model of how TAW Theme, TAW Core tools, and WordPress fit together before you dive deeper.
-
-</Card>
-
+  <Card title="Learn the core concepts" href="/concepts" icon="book-open" horizontal="false">
+    Build a mental model of how TAW Theme, TAW Core tools, and WordPress fit together before you dive deeper.
+  </Card>
 </Columns>
+
