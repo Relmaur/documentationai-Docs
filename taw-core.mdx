@@ -30,7 +30,7 @@ This boot process wires TAW Core tools into WordPress so that CLI commands, bloc
   </Card>
 </Columns>
 
-## New runtime modules: Forms and Mail
+## Forms&#x20;
 
 Forms and Mail in TAW Core give you a config-driven way to handle front-end forms, store submissions, post them to webhooks, and send templated emails using your theme's mail layouts.
 
@@ -64,7 +64,7 @@ echo $form->render();
   Configure the webhook endpoint and HMAC secret under **Settings > Form Webhook** in the WordPress admin. TAW Core signs outbound submission payloads so your receiver can verify authenticity.
 </Callout>
 
-### Mail: templates and fluent sending
+# Mail: templates and fluent sending
 
 Use `TAW\Core\Mail\MailTemplate` to work with HTML or MJML templates from your theme and `TAW\Core\Mail\Mailer` to send emails with variable replacement.
 
@@ -109,27 +109,50 @@ TAW Core adds admin screens to help you operate and test these modules without w
 
 Use these screens to confirm templates render as expected and form submissions reach your downstream systems before wiring them into live flows.
 
-## Metabox Fields
+## Metabox
 
 TAW Core metaboxes accept a `fields` configuration array, and each field defines a `type` that the `TAW\Core\Metabox\Metabox` engine knows how to render, validate, and save.
 
-A minimal metabox fields configuration looks like this:
+A full metabox fields configuration looks like this:
 
 ```php
-$fields = [
-    [
-        'id' => 'subtitle',
-        'type' => 'text',
-        'label' => 'Subtitle',
-        'placeholder' => 'Short tagline under the title',
+new Metabox([
+    'id'     => 'taw_hero',
+    'title'  => 'Hero Section',
+    'screen' => 'page',
+    'fields' => [
+        // Layout with widths
+        ['id' => 'heading',     'label' => 'Heading',     'type' => 'text',     'width' => '50', 'required' => true],
+        ['id' => 'subheading',  'label' => 'Subheading',  'type' => 'text',     'width' => '50'],
+
+        // Rich text
+        ['id' => 'body',        'label' => 'Body',        'type' => 'wysiwyg', 'rows' => 6],
+
+        // Select with options
+        ['id' => 'style',       'label' => 'Style',       'type' => 'select',
+         'options' => ['light' => 'Light', 'dark' => 'Dark']],
+
+        // Toggle
+        ['id' => 'show_cta',    'label' => 'Show CTA',    'type' => 'checkbox'],
+
+        // Color picker
+        ['id' => 'bg_color',    'label' => 'Background',  'type' => 'color', 'default' => '#ffffff'],
+
+        // Range slider
+        ['id' => 'min_height',  'label' => 'Min Height',  'type' => 'range',
+         'min' => 400, 'max' => 900, 'step' => 50, 'unit' => 'px', 'default' => 600],
+
+        // Image
+        ['id' => 'image',       'label' => 'Background Image', 'type' => 'image'],
+
+        // Post selector (single)
+        ['id' => 'featured_post', 'label' => 'Featured Post', 'type' => 'post_select', 'post_type' => 'post'],
+
+        // Post selector (multi, with max)
+        ['id' => 'related',     'label' => 'Related Posts', 'type' => 'post_select',
+         'post_type' => 'post', 'multiple' => true, 'max' => 3],
     ],
-    [
-        'id' => 'featured_color',
-        'type' => 'color',
-        'label' => 'Featured color',
-        'default' => '#1b4b7a',
-    ],
-];
+]);
 ```
 
 <Callout kind="info" collapsed="false">
