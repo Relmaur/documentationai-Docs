@@ -1,6 +1,6 @@
 ---
 title: TAW Core Tools
-description: Overview of the developer tools TAW Core exposes for the TAW Theme, including CLI commands and runtime APIs used to build and optimize WordPress sites.
+description: Overview of the developer tools TAW Core exposes for the TAW Theme, including CLI commands, runtime APIs, forms, mail, and debugging helpers.
 ---
 
 ## What counts as a tool in TAW Core
@@ -10,7 +10,7 @@ TAW Core tools are the developer-facing building blocks the theme uses: command-
 These tools fall into two groups:
 
 - **CLI commands** — Symfony Console commands exposed through the `bin/taw` script in your theme. Use them to generate and manage blocks and other theme artifacts.
-- **Runtime APIs and helpers** — PHP classes, functions, and configuration points that run inside WordPress, such as theme boot configuration, performance tuning, block registration, and admin UI engines.
+- **Runtime APIs and helpers** — PHP classes, functions, and configuration points that run inside WordPress, such as theme boot configuration, performance tuning, block registration, admin UI engines, config-driven forms, mail templates, and debugging helpers.
 
 <Callout kind="info">
 
@@ -33,6 +33,88 @@ See how `Theme::boot()` initializes TAW Core and how `Theme::performance([...])`
 </Card>
 
 </Columns>
+
+## New runtime modules: Forms and Mail
+
+Forms and Mail in TAW Core give you a config-driven way to handle front-end forms, store submissions, post them to webhooks, and send templated emails using your theme's mail layouts.
+
+### Forms: config-driven builder and submissions
+
+Use `TAW\Core\Form\Form` to define and render forms from configuration, with built-in validation, honeypot/CSRF patterns, and submission saving.
+
+A minimal pattern inside a template or controller looks like this:
+
+```php
+use TAW\Core\Form\Form;
+
+$form = new Form([
+    'id' => 'contact',
+    'fields' => [
+        // Define your fields here using the Form configuration schema.
+    ],
+    'email' => [
+        // Configure email behavior for submissions here.
+    ],
+]);
+
+echo $form->render();
+```
+
+`Form` coordinates rendering, validation, and saving the submission to the `taw_submission` custom post type through the submissions handler.
+
+`TAW\Core\Form\SubmissionsHandler` registers the `taw_submission` post type and optionally posts each submission to a configured webhook.
+
+<Callout kind="info">
+
+Configure the webhook endpoint and HMAC secret under **Settings > Form Webhook** in the WordPress admin. TAW Core signs outbound submission payloads so your receiver can verify authenticity.
+
+</Callout>
+
+### Mail: templates and fluent sending
+
+Use `TAW\Core\Mail\MailTemplate` to work with HTML or MJML templates from your theme and `TAW\Core\Mail\Mailer` to send emails with variable replacement.
+
+Mail templates live under your theme, for example `mails/contact.html` or `mails/contact.mjml`. `MailTemplate::getAvailable()` exposes the templates that exist on disk, and each template supports `{{var}}` placeholders for variables you pass at send time.
+
+A minimal example of sending a templated email:
+
+```php
+use TAW\Core\Mail\Mailer;
+
+$mailer = new Mailer();
+
+$sent = $mailer
+    ->to('support@acme-agency.test')
+    ->subject('New contact form submission')
+    ->template('contact') // resolves mails/contact.html or .mjml
+    ->setVariables([
+        'name' => 'Jane Chen',
+        'email' => 'jane@acme.com',
+        'message' => 'I would like to discuss a new project.',
+    ])
+    ->send();
+
+if (! $sent) {
+    // Handle failed mail transport (log, retry, etc.).
+}
+```
+
+<Callout kind="info">
+
+`Mailer` uses the underlying `wp_mail()` transport. Make sure your WordPress site is configured with a working mail provider (SMTP or transactional service) so test and production emails are delivered reliably.
+
+</Callout>
+
+`TAW\Core\Mail\MailTemplate` compiles templates from your theme, performs `{{var}}` replacement, and is responsible for producing the final HTML payload that `Mailer` sends.
+
+### Admin entrypoints and testing
+
+TAW Core adds admin screens to help you operate and test these modules without writing ad-hoc scripts.
+
+- **Tools > Test Emails** — registered by `MailTester::register()`, lets you send test emails using your templates and variables to verify layout and delivery in your environment.
+- **Settings > Form Webhook** — configures the webhook URL and HMAC secret that `SubmissionsHandler` uses when posting saved submissions to an external endpoint.
+
+Use these screens to confirm templates render as expected and form submissions reach your downstream systems before wiring them into live flows.
 
 ## Tool index
 
@@ -78,7 +160,7 @@ Integrate Vite-based builds and asset loading with TAW Core's helpers to manage 
 
 <Card title="Debugging utilities" href="/taw-core-debugging" icon="info">
 
-Use logging, dump helpers, and other diagnostics exposed by TAW Core to debug theme behavior safely in development.
+Use logging, enhanced `dump()` / `dd()`, and other diagnostics exposed by TAW Core to debug theme behavior safely in local and development environments.
 
 </Card>
 
@@ -91,7 +173,7 @@ Choose tools based on the kind of change you are making:
 - **New or updated content blocks** — Use the **TAW CLI** (`make:block`) and the **Blocks API** for registration and rendering.
 - **Admin UX or content modeling** — Use the **Metabox engine** and **Options pages** to add structured configuration in the admin.
 - **Performance or infrastructure changes** — Adjust **Theme boot and performance** configuration and wire assets through the **Vite/asset pipeline**.
-- **Troubleshooting** — Turn on and use **Debugging utilities** to inspect what TAW Core is doing at runtime.
+- **Troubleshooting** — Turn on and use **Debugging utilities** to inspect what TAW Core is doing at runtime. The enhanced `dump()` / `dd()` helpers format output cleanly and are intended for local or development use only, not production.
 
 ## Next steps
 

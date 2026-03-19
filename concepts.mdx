@@ -1,6 +1,6 @@
 ---
 title: TAW Core concepts
-description: Understand how TAW Core and TAW Theme fit together, from PHP blocks and MetaBlocks to metabox storage and the Vite/Tailwind asset pipeline.
+description: Understand how TAW Core and TAW Theme fit together, from PHP blocks and MetaBlocks to metabox storage, assets, and other runtime systems.
 ---
 
 ## Overview
@@ -218,6 +218,20 @@ export default {
 ```
 
 TAW Theme decides which entrypoints exist; TAW Core ensures those assets are enqueued for front-end requests.
+
+## Other runtime systems you may use
+
+Beyond blocks, metaboxes, and assets, TAW Core also ships with additional runtime modules that you can opt into from your theme when you need them.
+
+<Callout kind="info">
+These modules stay out of the way until you use them. Reach for them when your theme needs SVG helpers, form handling, or mail delivery, not by default.
+</Callout>
+
+TAW Core includes SVG helpers under `TAW\Helpers\Svg` for safe SVG uploads and rendering, which you often use alongside performance helpers documented in the TAW Theme guide. Start with the [TAW Theme page](/taw-core-theme) to see how these helpers fit into a concrete theme.
+
+For interactive experiences, TAW Core provides a Forms runtime via `TAW\Core\Form\Form` plus a submissions handler that stores form submissions and can trigger webhooks. When you need user input stored and processed in a structured way, this forms layer gives you a consistent API inside your theme rather than ad-hoc handling.
+
+For email, the Mail runtime exposes `TAW\Core\Mail\Mailer` together with `MailTemplate` so you can send templated HTML or MJML emails from your theme using the same conventions as the rest of the framework. The [TAW Core overview](/taw-framework) shows how these tools sit alongside blocks and the asset pipeline, and points you to deeper docs for each area.
 
 ## Recommended mental model and next steps
 
