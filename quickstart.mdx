@@ -1,0 +1,184 @@
+---
+title: Quickstart
+description: Guide to get started with Riven by signing up and creating your first project in under 5 minutes.
+---
+
+## Get Started in Under 5 Minutes
+
+Riven lets you build, collaborate, and innovate with the world's leading AI-powered developer platform. Follow these steps to sign up, create your first project, generate AI code, and invite your team.
+
+## Prerequisites
+
+<Callout kind="info">
+
+Before starting, ensure you have:
+
+- A GitHub account for authentication
+- Node.js `{>=18}` installed
+- Access to `https://dashboard.example.com`
+
+</Callout>
+
+## Sign Up and Create Your First Project
+
+Use these steps to get your account set up and launch a new project.
+
+<Steps>
+  <Step title="Sign Up" icon="user-plus">
+    Visit [`https://dashboard.example.com`](https://dashboard.example.com) and click **Sign Up**.
+
+    Connect your GitHub account or use email. Verify your email if prompted.
+  </Step>
+  <Step title="Create Project" icon="plus">
+    Once logged in, click **New Project**.
+
+    Enter project name like `my-first-app`, select **Web App** template, and click **Create**.
+  </Step>
+</Steps>
+
+## Generate Your First AI Code
+
+Riven's AI generates production-ready code from natural language prompts. Try it in your new project.
+
+<Tabs>
+  <Tab title="Dashboard" icon="monitor">
+    In your project dashboard:
+
+    1. Click **AI Code Gen**.
+    2. Enter prompt: `Create a responsive login form in React with Tailwind CSS`.
+    3. Click **Generate**.
+
+    Riven outputs complete, editable code you can copy or commit directly.
+  </Tab>
+  <Tab title="CLI" icon="terminal">
+    Install the Riven CLI first:
+
+````bash
+npm install -g @riven/cli
+````
+
+    Authenticate and generate:
+
+````bash
+riven login
+riven generate --project my-first-app --prompt "Build a todo list API in Node.js"
+````
+  </Tab>
+</Tabs>
+
+## Invite Team Members
+
+Collaborate instantly by adding your team.
+
+<Steps>
+  <Step title="Get Invite Link" icon="share-2">
+    In project settings, navigate to **Team** tab and click **Invite Members**.
+  </Step>
+  <Step title="Share and Manage" icon="users">
+    Copy the invite link and share via email or Slack. New members get editor access automatically.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  For API-based invites, use the `/projects/{projectId}/invites` endpoint with your `{API_KEY}`. See [Authentication](/authentication) for details.
+</Callout>
+
+## Example Generated Code
+
+Here's sample AI-generated code from the login prompt:
+
+<CodeGroup tabs="React,NEXT.js">
+````javascript
+// React component with Tailwind
+import { useState } from 'react';
+
+export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle login logic
+    console.log('Login:', { email, password });
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form onSubmit={handleSubmit} className="p-8 bg-white rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="w-full p-3 border rounded-lg mb-4"
+          required
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          className="w-full p-3 border rounded-lg mb-6"
+          required
+        />
+        <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">
+          Sign In
+        </button>
+      </form>
+    </div>
+  );
+}
+````
+````javascript
+// Next.js page with Tailwind (app router)
+'use client';
+
+import { useState } from 'react';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // API call to /api/login
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    // Handle response
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Same form JSX as above */}
+      <form onSubmit={handleSubmit} className="p-8 bg-white/80 backdrop-blur rounded-2xl shadow-xl w-96">
+        {/* Inputs and button */}
+      </form>
+    </div>
+  );
+}
+````
+</CodeGroup>
+
+## Next Steps
+
+<Columns cols={2}>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Set up API keys and secure your integrations.
+  </Card>
+  <Card title="Advanced Guides" icon="book-open" href="/guides">
+    Explore workflows, CI/CD, and team collaboration.
+  </Card>
+  <Card title="Changelog" icon="git-branch" href="/changelog">
+    Stay updated with the latest features and fixes.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Integrate Riven programmatically.
+  </Card>
+</Columns>
+
+<Callout kind="success">
+  Congratulations! You've completed the quickstart. Your first Riven project is ready for innovation.
+</Callout>

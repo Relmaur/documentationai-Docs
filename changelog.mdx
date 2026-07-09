@@ -1,0 +1,143 @@
+---
+title: Changelog
+description: Version history of Riven with summaries of recent updates and changes.
+---
+
+## Recent Updates
+
+Stay informed about the latest improvements, features, and fixes in Riven. Review the changelogs below to understand new capabilities and required actions for your setup. Each release includes detailed notes on breaking changes and migration steps.
+
+<Update label="2024-11-15" description="v1.3.0" tags={["feature", "improvement"]}>
+
+## New Features
+
+- Added real-time collaboration for AI code generation sessions.
+- Introduced webhook support for custom event notifications.
+
+## Improvements
+
+- Enhanced performance of code completion by `>30%`.
+- Updated UI components with better dark mode support.
+
+## Bug Fixes
+
+- Fixed intermittent failures in Codespaces integration.
+- Resolved authentication token refresh issues.
+
+</Update>
+
+<Update label="2024-10-20" description="v1.2.0" tags={["feature", "bugfix"]}>
+
+## New Features
+
+- New MCP Registry integration for external AI tools.
+- Support for GitHub Actions workflows with AI agents.
+
+## Bug Fixes
+
+- Patched security vulnerability in secret protection (CVE-2024-XXXX).
+- Corrected API rate limiting behavior.
+
+<CodeGroup tabs="JavaScript,Python">
+```javascript
+// New webhook handler example
+app.post('/webhook', (req, res) => {
+  const event = req.body;
+  console.log(`Received event: ${event.type}`);
+  res.status(200).send('OK');
+});
+```
+```python
+# New webhook handler example
+from flask import Flask, request
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    event = request.json
+    print(f"Received event: {event['type']}")
+    return 'OK', 200
+```
+</CodeGroup>
+
+</Update>
+
+<Update label="2024-09-10" description="v1.1.0" tags={["breaking", "feature"]}>
+
+## Breaking Changes
+
+- Updated authentication endpoint from `/auth/login` to `/v2/auth/login`.
+- Removed deprecated `legacyToken` parameter.
+
+## New Features
+
+- Advanced security scanning for code vulnerabilities.
+- Dashboard analytics for developer workflows.
+
+## Migration Steps
+
+Follow these steps to update your integration:
+
+<Steps>
+<Step title="Update Dependencies" icon="download">
+
+Run the upgrade command:
+
+````bash
+npm install riven@latest
+````
+
+</Step>
+<Step title="Replace Deprecated Endpoint" icon="settings">
+
+Update your API calls:
+
+````javascript
+// Old
+fetch('https://api.example.com/auth/login', { ... });
+
+// New
+fetch('https://api.example.com/v2/auth/login', { ... });
+````
+
+</Step>
+<Step title="Test Authentication" icon="check-circle">
+
+Verify token refresh works in your app.
+
+</Step>
+</Steps>
+
+</Update>
+
+## Upcoming Roadmap
+
+Track upcoming features and priorities.
+
+<Board title="Q4 2024 Roadmap">
+  <BoardColumn title="Planned" color="0" icon="calendar">
+    <BoardCard title="DevSecOps Integration" description="Full CI/CD pipeline support" icon="shield" dueDate="2024-12-15" />
+    <BoardCard title="Multi-language AI Agents" description="Support for Python and Go" icon="code" />
+  </BoardColumn>
+  <BoardColumn title="In Progress" color="1" icon="loader-2">
+    <BoardCard title="Enterprise SSO" description="OAuth and SAML providers" icon="users" author="Engineering" />
+  </BoardColumn>
+  <BoardColumn title="Completed" color="2" icon="check-circle">
+    <BoardCard title="Secret Scanning" description="Real-time leak detection" createdAt="2024-11-01" />
+  </BoardColumn>
+</Board>
+
+## Stay Updated
+
+<Callout kind="tip">
+Subscribe to the [Riven blog](https://github.blog) or follow the [GitHub changelog](https://github.blog/changelog) for announcements. Check your dashboard at `https://dashboard.example.com` for personalized updates.
+</Callout>
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="book-open" href="/quickstart">
+    Get started with the latest version.
+  </Card>
+  <Card title="Migration Guide" icon="settings" href="/migration">
+    Full instructions for upgrades.
+  </Card>
+</Columns>

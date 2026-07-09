@@ -1,0 +1,31 @@
+---
+title: Build Fails on Emelambda
+description: Fix a build failure when deploying on Emelambda.
+---
+
+## Symptoms
+
+- Build process exits with error
+- Message: "Dependency not found" or "Build timed out"
+
+## Causes
+
+- Missing dependencies in your `emelambda.json`
+- Network connectivity issues
+
+## Solution
+
+<Steps>
+  <Step title="Check dependencies">
+    ````bash
+    cat emelambda.json
+    # Ensure all required libraries are listed
+    ````
+  </Step>
+  <Step title="Retry build">
+    Restart build from the Riven dashboard.
+  </Step>
+  <Step title="Network check">
+    Confirm your server can access api.riven.ai.
+  </Step>
+</Steps>

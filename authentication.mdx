@@ -1,0 +1,171 @@
+---
+title: Authentication & Permissions
+description: Details on authentication methods, tokens, and permission management in Riven.
+---
+
+## Overview
+
+Riven provides secure authentication for user accounts, API access, and collaborative workflows. You can authenticate using API keys for simple integrations, OAuth 2.0 for user-authorized apps, or direct login for the dashboard. Permissions follow role-based access control (RBAC) to manage what actions you can perform across projects and resources.
+
+<Callout kind="alert">
+  Always store tokens securely and rotate them regularly. Never expose them in client-side code or public repositories.
+</Callout>
+
+## Authentication Methods
+
+Choose the method that fits your use case. API keys work for server-to-server calls, while OAuth suits interactive applications.
+
+<Tabs>
+  <Tab title="API Keys" icon="key">
+
+## Generate an API Key
+
+Follow these steps to create a key from your Riven dashboard.
+
+<Steps>
+  <Step title="Log In" icon="log-in">
+    Visit `https://dashboard.example.com` and sign in with your account.
+  </Step>
+  <Step title="Navigate to Settings" icon="settings">
+    Go to **Account > API Keys**.
+  </Step>
+  <Step title="Create Key" icon="plus">
+    Click **New API Key**, add a name, and copy the generated key.
+  </Step>
+</Steps>
+
+## Use the API Key
+
+Pass the key in the `Authorization` header.
+
+<ParamField header="Authorization" param-type="string" required="true">
+  Format: `Bearer YOUR_API_KEY`.
+</ParamField>
+
+<CodeGroup tabs="JavaScript,Python,cURL">
+  ```javascript
+  const response = await fetch('https://api.example.com/v1/projects', {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  });
+  const data = await response.json();
+  console.log(data);
+  ```
+  ```python
+  import requests
+
+  headers = {'Authorization': 'Bearer YOUR_API_KEY'}
+  response = requests.get('https://api.example.com/v1/projects', headers=headers)
+  print(response.json())
+  ```
+  ```bash
+  curl -H "Authorization: Bearer YOUR_API_KEY" https://api.example.com/v1/projects
+  ```
+</CodeGroup>
+
+  </Tab>
+
+  <Tab title="OAuth 2.0" icon="shield">
+
+## OAuth Flow
+
+Riven supports OAuth 2.0 with PKCE for secure client-side apps.
+
+1. Redirect users to `https://auth.example.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=projects:read projects:write&response_type=code`.
+
+2. Exchange the code for a token at `https://auth.example.com/oauth/token`.
+
+<ParamField query="client_id" param-type="string" required="true">
+  Your registered application client ID.
+</ParamField>
+
+<ParamField query="redirect_uri" param-type="string" required="true">
+  Callback URL registered in your app settings.
+</ParamField>
+
+<ResponseField name="access_token" field-type="string" required="true">
+  Short-lived token for API calls.
+</ResponseField>
+
+<ResponseField name="refresh_token" field-type="string">
+  Use to obtain new access tokens.
+</ResponseField>
+
+<CodeGroup tabs="JavaScript,Python">
+  ```javascript
+  // Exchange code for token
+  const tokenResponse = await fetch('https://auth.example.com/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: 'YOUR_CLIENT_ID',
+      code: 'AUTH_CODE',
+      grant_type: 'authorization_code',
+      redirect_uri: 'YOUR_REDIRECT_URI'
+    })
+  });
+  const tokens = await tokenResponse.json();
+  ```
+  ```python
+  import requests
+
+  data = {
+    'client_id': 'YOUR_CLIENT_ID',
+    'code': 'AUTH_CODE',
+    'grant_type': 'authorization_code',
+    'redirect_uri': 'YOUR_REDIRECT_URI'
+  }
+  response = requests.post('https://auth.example.com/oauth/token', data=data)
+  tokens = response.json()
+  ```
+</CodeGroup>
+
+  </Tab>
+
+  <Tab title="User Login" icon="user">
+
+## Dashboard Access
+
+Sign in directly at `https://dashboard.example.com/login` using email/password or SSO providers like Google and GitHub.
+
+After login, access your profile to manage sessions and linked accounts.
+
+  </Tab>
+</Tabs>
+
+## Role-Based Access Control (RBAC)
+
+Riven uses RBAC to enforce permissions. Assign roles like **Admin**, **Editor**, or **Viewer** to users or teams at the project or organization level.
+
+<Expandable title="Advanced RBAC Configuration" default-open="false">
+
+Custom roles allow granular controls, such as `projects:read` or `ai:generate`.
+
+```javascript
+// Example permission check
+const permissions = await fetch('https://api.example.com/v1/user/permissions', {
+  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+}).then(r => r.json());
+
+if (permissions.includes('projects:write')) {
+  // Allow project creation
+}
+```
+
+</Expandable>
+
+## Next Steps
+
+<Columns cols={2}>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Explore all endpoints and parameters.
+  </Card>
+  <Card title="Security Best Practices" icon="shield" href="/security">
+    Learn about token rotation and audit logs.
+  </Card>
+</Columns>
+
+<Callout kind="tip">
+  Test authentication in our sandbox environment before production use.
+</Callout>
